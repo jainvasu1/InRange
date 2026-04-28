@@ -52,7 +52,6 @@ const ProfileSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Optional: index by user for fast lookup (user is unique already)
-ProfileSchema.index({ user: 1 }, { unique: true });
+// Note: `user` already has `unique: true` in the schema, which creates the index.
 
 module.exports = mongoose.model("Profile", ProfileSchema);

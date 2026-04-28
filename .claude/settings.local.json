@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm start *)",
+      "Bash(cat C:\\\\\\\\Users\\\\\\\\DELL\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\C--Users-DELL-Downloads-InRange-main\\\\\\\\4f9be6e3-a685-42b9-a9f1-739ac0347dc5\\\\\\\\tasks\\\\\\\\bp03yxktk.output)",
+      "Bash(netstat -ano)",
+      "Bash(powershell.exe -Command \"Get-NetTCPConnection -LocalPort 3000 -State Listen | Select-Object -ExpandProperty OwningProcess\")",
+      "Bash(/c/Windows/System32/netstat.exe -ano)",
+      "Bash(/c/Windows/System32/taskkill.exe //PID 13892 //F)",
+      "Bash(node tmp_check_profiles.js)",
+      "Bash(node tmp_check_raw.js)",
+      "Bash(node tmp_dump.js)",
+      "Bash(awk '{print $5}')",
+      "Bash(xargs -I {} /c/Windows/System32/taskkill.exe //PID {} //F)"
+    ]
+  }
+}

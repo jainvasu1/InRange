@@ -79,7 +79,8 @@ exports.loginUser = async (req, res) => {
     // Store token in cookie
     res.cookie('token', token, {
       httpOnly: true,
-      secure: false, // true only in HTTPS
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
