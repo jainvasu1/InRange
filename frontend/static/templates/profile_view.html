@@ -149,7 +149,8 @@
     </div>
 
     <aside class="left-section">
-        <img id="profileImg" class="profile-pic" src="https://via.placeholder.com/400" alt="Profile Photo">
+        <img id="profileImg" class="profile-pic" src="/images/blogo.png" alt="Profile Photo"
+             onerror="this.onerror=null;this.src='/images/blogo.png';">
     </aside>
 
     <section class="right-section">
@@ -299,7 +300,7 @@ function renderProfile(data) {
     if (data.profilePicture) {
         img.src = data.profilePicture;
     } else {
-        img.src = "https://via.placeholder.com/400";
+        img.src = "/images/blogo.png";
     }}
 
 // ✅ FETCH WITH TOKEN (VERY IMPORTANT)
