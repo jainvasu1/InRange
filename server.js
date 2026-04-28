@@ -23,6 +23,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// Trust Render/Heroku-style reverse proxy so secure cookies work over HTTPS
+app.set("trust proxy", 1);
+
 // -------- Middleware --------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
