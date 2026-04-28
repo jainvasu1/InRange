@@ -7,6 +7,8 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.1/dist/cropper.min.js"></script>
 
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -168,6 +170,20 @@ input[type=range] {
 <h2>Tell us about yourself!</h2>
 
 <div id="upload-error" style="display:none;background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;padding:10px 14px;border-radius:6px;margin-bottom:10px;font-size:0.9rem;"></div>
+
+<!-- Crop Modal -->
+<div id="cropModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#fff;padding:20px;border-radius:12px;max-width:95vw;width:480px;">
+    <h3 style="margin-bottom:12px;color:#0F172A;">Adjust your photo</h3>
+    <div style="max-height:60vh;overflow:hidden;">
+      <img id="cropTarget" style="max-width:100%;display:block;">
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
+      <button type="button" id="cropCancel" style="padding:8px 16px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;">Cancel</button>
+      <button type="button" id="cropSave" style="padding:8px 16px;border:none;background:#0F172A;color:#fff;border-radius:6px;cursor:pointer;">Save Photo</button>
+    </div>
+  </div>
+</div>
 
 <form action="/api/profile/update" method="POST" enctype="multipart/form-data">
 
@@ -347,22 +363,77 @@ document.getElementById('avatarCircle').innerHTML=
 }
 });
 
-/* File preview when user picks an image */
-document.getElementById('profilePictureInput').addEventListener('change', (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) {
-    alert('Image too large. Max 5 MB.');
-    e.target.value = '';
-    return;
+/* File picker -> crop modal -> save cropped image back into the form */
+(function () {
+  const fileInput = document.getElementById('profilePictureInput');
+  const modal = document.getElementById('cropModal');
+  const cropTarget = document.getElementById('cropTarget');
+  const cancelBtn = document.getElementById('cropCancel');
+  const saveBtn = document.getElementById('cropSave');
+  let cropper = null;
+
+  function openModal() { modal.style.display = 'flex'; }
+  function closeModal() {
+    modal.style.display = 'none';
+    if (cropper) { cropper.destroy(); cropper = null; }
   }
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    document.getElementById('avatarCircle').innerHTML =
-      `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
-  };
-  reader.readAsDataURL(file);
-});
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image too large. Max 5 MB.');
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      cropTarget.src = ev.target.result;
+      openModal();
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(cropTarget, {
+        aspectRatio: 1,
+        viewMode: 1,
+        dragMode: 'move',
+        autoCropArea: 1,
+        background: false,
+        movable: true,
+        zoomable: true,
+        scalable: false,
+        rotatable: true,
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    fileInput.value = '';
+    closeModal();
+  });
+
+  saveBtn.addEventListener('click', () => {
+    if (!cropper) return closeModal();
+    const canvas = cropper.getCroppedCanvas({
+      width: 512,
+      height: 512,
+      imageSmoothingQuality: 'high',
+    });
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const croppedFile = new File([blob], 'profile.jpg', { type: 'image/jpeg' });
+      const dt = new DataTransfer();
+      dt.items.add(croppedFile);
+      fileInput.files = dt.files;
+
+      // Update avatar preview with the cropped result
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      document.getElementById('avatarCircle').innerHTML =
+        `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+
+      closeModal();
+    }, 'image/jpeg', 0.9);
+  });
+})();
 
 /* Show server-side upload error from query param */
 (function () {
