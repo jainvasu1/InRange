@@ -139,12 +139,13 @@
     .stat-box {
       flex:1;
       background:#fff;
-      padding:10px;
+      padding:8px;
       border-radius:10px;
       text-align:center;
-      font-size:14px;
+      font-size:12px;
       box-shadow:0 2px 6px rgba(0,0,0,0.05);
     }
+    .stat-box small { font-size: 10px; color: #666; }
 
     /* Score section */
     .score-box {
@@ -322,11 +323,11 @@
             </div>
           </div>
           <!-- PROFILE + MATCH -->
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-            <img id="matchAvatar" src="" style="width:50px;height:50px;border-radius:50%;object-fit:cover;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <img id="matchAvatar" src="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;">
             <div>
-              <h3 id="matchName" style="font-weight:600;"></h3>
-              <span id="matchPercent" style="font-size:12px;background:#fce7f3;padding:3px 8px;border-radius:10px;color:#e75480;"></span>
+              <h3 id="matchName" style="font-weight:600;font-size:15px;"></h3>
+              <span id="matchPercent" style="font-size:11px;background:#fce7f3;padding:2px 7px;border-radius:10px;color:#e75480;"></span>
             </div>
           </div>
 
@@ -334,46 +335,48 @@
           <div style="
             background: #fde2e4;
             border: 1px solid #f8cdd3;
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 12px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
             display:flex;
-            gap:8px;
+            gap:6px;
             align-items:flex-start;">
-            <span style="font-size:18px;">💡</span>
-            <p id="summaryText" style="font-size:13px;margin:0;"></p>
+            <span style="font-size:14px;">💡</span>
+            <p id="summaryText" style="font-size:12px;margin:0;line-height:1.4;"></p>
           </div>
 
           <!-- GRID SECTION -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
 
             <!-- CHART -->
-            <div style="background:#fff;border-radius:10px;padding:10px;">
-              <p style="font-weight:600;font-size:13px;margin-bottom:5px;">Compatibility Overview</p>
-              <canvas id="radarChart" height="200"></canvas>
+            <div style="background:#fff;border-radius:10px;padding:8px;">
+              <p style="font-weight:600;font-size:12px;margin-bottom:4px;">Compatibility Overview</p>
+              <div style="height:170px;position:relative;">
+                <canvas id="radarChart"></canvas>
+              </div>
             </div>
 
             <!-- MATCH POINTS -->
-            <div style="background:#f0fdf4;border-radius:10px;padding:10px;">
-              <p style="font-weight:600;font-size:13px;">What You Both Match On</p>
-              <ul id="matchPoints" style="font-size:12px;margin-top:5px;"></ul>
+            <div style="background:#f0fdf4;border-radius:10px;padding:8px;">
+              <p style="font-weight:600;font-size:12px;">What You Both Match On</p>
+              <ul id="matchPoints" style="font-size:11px;margin-top:4px;padding-left:14px;line-height:1.4;"></ul>
             </div>
 
           </div>
 
           <!-- DIFFERENCES -->
-          <div style="background:#fff7ed;padding:10px;border-radius:10px;margin-top:12px;">
-            <p style="font-weight:600;font-size:13px;">Possible Differences</p>
-            <p id="differencesText" style="font-size:12px;"></p>
+          <div style="background:#fff7ed;padding:8px 10px;border-radius:10px;margin-top:10px;">
+            <p style="font-weight:600;font-size:12px;">Possible Differences</p>
+            <p id="differencesText" style="font-size:11px;line-height:1.4;"></p>
           </div>
 
           <!-- AI INSIGHT -->
-          <div style="background:#f5f3ff;padding:10px;border-radius:10px;margin-top:12px;">
-            <p style="font-size:12px;" id="aiExplanation"></p>
+          <div style="background:#f5f3ff;padding:8px 10px;border-radius:10px;margin-top:10px;">
+            <p style="font-size:11px;line-height:1.4;" id="aiExplanation"></p>
           </div>
 
           <!-- BOTTOM STATS -->
-          <div style="display:flex;gap:10px;margin-top:12px;">
+          <div style="display:flex;gap:8px;margin-top:10px;">
             <div class="stat-box">
               ❤️ <span id="lifeScore"></span><br><small>Lifestyle</small>
             </div>
@@ -658,11 +661,14 @@
         },
         options: {
           responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
           scales: {
             r: {
               min: 0,
               max: 100,
-              ticks: { stepSize: 20 }
+              ticks: { stepSize: 25, font: { size: 9 } },
+              pointLabels: { font: { size: 10 } }
             }
           }
         }
