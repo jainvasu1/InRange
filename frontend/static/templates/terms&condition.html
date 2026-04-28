@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InRange | Terms and Conditions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom colors based on the vintage template */
+        .bg-body { background-color: #F4D0A8; } /* Soft orange/brown background */
+        .bg-left-panel { background-color: #F8AAB6; } /* Light pink */
+        .bg-right-panel { background-color: #FFFBE8; } /* Creamy off-white */
+        .text-accent { color: #CE808B; } /* Darker pink for text and borders */
+
+        /* Mimicking the dashed border of the greeting card */
+        .dashed-border {
+            border: 4px dashed #CE808B;
+        }
+
+        /* Styling for the decorative heart line */
+        .heart-line {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+        }
+        .heart-line span {
+            color: #E47C8C; /* Rose color for hearts */
+            font-size: 1.25rem;
+        }
+        /* Custom CSS for Logo Hover Effect */
+        .logo-container:hover {
+            transform: rotate(0deg) scale(1.05) !important; /* Scale up slightly and neutralize the initial rotation */
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-body font-sans min-h-screen flex items-center justify-center p-4 md:p-10">
+
+    <!-- Main Card Container --><div class="w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row transform scale-95 md:scale-100">
+
+        <!-- Left Panel: Logo and Icon (The "Cover" side) --><div class="bg-left-panel p-8 md:p-12 w-full md:w-2/5 flex flex-col items-center justify-center text-white text-center dashed-border">
+            
+            <!-- InRange Main Logo/Title (Now with PNG) - ADDED logo-container CLASS --><div class="p-4 bg-[#E47C8C] rounded-xl shadow-lg transform rotate-[-3deg] flex items-center justify-center logo-container">
+                <img src="/images/logo.png" alt="InRange Logo" class="max-w-[180px] h-auto w-full">
+            </div>
+
+            <p class="mt-8 text-lg font-medium text-accent">
+                Your Secure Co-living Experience
+            </p>
+
+            <!-- Icon (Shield with Checkmark and T&C Document) --><div class="mt-8 flex justify-center w-full"> 
+                <img src="/images/t&c.png" alt="Terms and Conditions Icon" class="w-24 h-24 md:-ml-05"> 
+            </div>
+            <!-- Rules of Engagement (Shifted Downwards) --><p class="mt-4 text-sm text-accent text-center">
+                Rules of Engagement
+            </p>
+            
+        </div>
+
+        <!-- Right Panel: Terms and Conditions Content --><div class="bg-right-panel p-8 md:p-12 w-full md:w-3/5 text-gray-800 flex flex-col">
+            
+            <!-- Top Heart Line Decoration --><div class="heart-line">
+                <span>&hearts;</span><span>&hearts;</span><span>&hearts;</span><span>&hearts;</span><span>&hearts;</span><span>&hearts;</span>
+            </div>
+
+            <h3 class="text-3xl font-serif font-bold text-center text-accent my-4">
+                Terms and Conditions of Service
+            </h3>
+
+            <!-- Content Area (Mimicking handwritten lines with paragraphs) --><div class="space-y-6 flex-grow overflow-y-auto">
+                <p class="text-sm border-b border-gray-300 py-1">
+                    <span class="font-bold">1. Acceptance of Terms.</span> By accessing or using the InRange platform, you agree to be bound by these Terms and Conditions. If you disagree with any part of the terms, then you may not access the service.
+                </p>
+                <p class="text-sm border-b border-gray-300 py-1">
+                    <span class="font-bold">2. User Accounts.</span> You must be at least 18 years of age to use this service. You are responsible for safeguarding the password that you use to access the service and for any activities or actions under your password.
+                </p>
+                <p class="text-sm border-b border-gray-300 py-1">
+                    <span class="font-bold">3. Conduct.</span> Users agree to conduct themselves respectfully and honestly in all interactions. Discrimination, harassment, or misrepresentation is strictly prohibited and will result in account termination.
+                </p>
+                <p class="text-sm border-b border-gray-300 py-1">
+                    <span class="font-bold">4. Content Ownership.</span> You retain ownership of any content you submit, post, or display on or through the service. By posting content, you grant InRange a worldwide, non-exclusive license to use, modify, and display the content on the platform.
+                </p>
+                <p class="text-sm border-b border-gray-300 py-1">
+                    <span class="font-bold">5. Service Fees.</span> Certain features of the service may require payment of fees. You agree to pay all applicable fees and taxes associated with your use of the service. All fees are non-refundable unless otherwise specified by law.
+                </p>
+                <p class="text-sm border-b border-gray-300 py-1">
+                    <span class="font-bold">6. Termination.</span> We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.
+                </p>
+                <p class="text-sm border-b border-gray-300 py-1">
+                    <span class="font-bold">7. Governing Law.</span> These Terms shall be governed and construed in accordance with the laws of India, without regard to its conflict of law provisions.
+                </p>
+                <p class="text-sm py-1">
+                    <span class="font-bold">8. Changes to Terms.</span> We reserve the right, at our sole discretion, to modify or replace these Terms at any time. We will provide at least 30 days' notice before any new terms take effect.
+                </p>
+            </div>
+
+            <!-- Acceptance Checkbox and Button --><div class="mt-8 pt-4 border-t border-gray-300">
+                <label for="acceptTerms" class="flex items-center space-x-3 cursor-pointer">
+                    <!-- Hidden native checkbox, styled using the 'peer' utility --><input type="checkbox" id="acceptTerms" class="hidden peer">
+                    
+                    <!-- Custom Checkbox appearance --><!-- Updated classes: peer-checked:bg-accent to fill with pink, text-white for the checkmark to be white --><div class="w-5 h-5 border-2 border-[#CE808B] rounded-sm flex items-center justify-center peer-checked:bg-[#CE808B] peer-checked:border-[#CE808B] transition duration-150 ease-in-out">
+                        <!-- Checkmark SVG - now explicitly text-white --><svg class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition duration-150 ease-in-out" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <span class="text-sm font-semibold text-gray-700">
+                        I have read and agree to the InRange Terms and Conditions of Service.
+                    </span>
+                </label>
+
+                <!-- Submit button - Disabled by default --><button id="submitAcceptance" disabled class="mt-4 w-full py-2 rounded-lg bg-gray-300 text-gray-500 font-bold transition duration-300 ease-in-out">
+                    Accept and Continue
+                </button>
+            </div>
+
+
+            <!-- Bottom Heart Line Decoration --><div class="heart-line mt-6">
+                <span>&hearts;</span><span>&hearts;</span><span>&hearts;</span><span>&hearts;</span><span>&hearts;</span><span>&hearts;</span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript for Button State Logic --><script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkbox = document.getElementById('acceptTerms');
+            const button = document.getElementById('submitAcceptance');
+            const accentColor = '#CE808B'; // Matches .text-accent in CSS
+            const hoverColor = '#B5737C'; // Slightly darker for hover effect
+
+            if (checkbox && button) {
+                // Function to update button state and styling
+                function updateButtonState(isChecked) {
+                    if (isChecked) {
+                        button.disabled = false;
+                        button.classList.remove('bg-gray-300', 'text-gray-500');
+                        button.style.backgroundColor = accentColor;
+                        button.classList.add('text-white');
+                        button.onmouseover = () => button.style.backgroundColor = hoverColor;
+                        button.onmouseout = () => button.style.backgroundColor = accentColor;
+                    } else {
+                        button.disabled = true;
+                        button.style.backgroundColor = ''; // Reset inline style
+                        button.classList.remove('text-white');
+                        button.classList.add('bg-gray-300', 'text-gray-500');
+                        button.onmouseover = null;
+                        button.onmouseout = null;
+                    }
+                }
+                
+                // Initial state update
+                updateButtonState(checkbox.checked);
+                
+                // Event listener to change button state on checkbox change
+                checkbox.addEventListener('change', (event) => {
+                    updateButtonState(event.target.checked);
+                });
+
+                // Optional: Action on button click
+                button.addEventListener('click', () => {
+                    if (!button.disabled) {
+                        console.log('Terms accepted. Redirecting to profile.html...');
+                        // Redirect to the profile page
+                        window.location.href = 'profile.html';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoomieRadar - Sign Up</title>
+    <!-- Assuming signup.css handles the main layout and colors -->
+    <link rel="stylesheet" href="/css/signup.css"> 
+    <!-- Boxicons for icons -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    
+    <!-- Inline styles for logo positioning (assuming colors are similar to preferences page) -->
+    <style>
+        .form-box {
+            /* Make sure the form box is the positioning context for the absolute logo */
+            position: relative; 
+        }
+
+        /* NEW: Logo Styling for Sign Up page */
+        .form-box .logo {
+            position: absolute;
+            top: 20px; 
+            left: 20px; 
+            width: 50px; 
+            height: auto;
+            z-index: 10; 
+        }
+
+        .form-box.register h2 {
+            /* Adjusted margin to clear the space for the logo */
+            margin-top: 50px; 
+            text-align: center;
+        }
+
+        /* Assuming the rest of the styling is in /css/signup.css */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left box: Signup form -->
+        <div class="form-box register">
+            <img src="/images/blogo.png" alt="RoomieRadar Logo" class="logo">
+            <h2>Create Account</h2>
+            <form action="http://localhost:3000/auth/signup" method="POST">
+                <div class="input-box">
+                    <i class='bx bx-user'></i>
+                    <input type="text" name="username" required>
+                    <label>Username</label>
+                </div>
+                <div class="input-box">
+                    <i class='bx bx-envelope'></i>
+                    <input type="email" name="email" required>
+                    <label>Email</label>
+                </div>
+                <div class="input-box">
+                    <i class='bx bx-lock-alt'></i>
+                    <input type="password" name="password" required>
+                    <label>Password</label>
+                </div>
+                <div class="input-box">
+                    <i class='bx bx-lock'></i>
+                    <input type="password" name="confirm_password" required>
+                    <label>Confirm Password</label>
+                </div>
+                <button type="submit" class="btn">Sign Up</button>
+            </form>
+        </div>
+        <p id="error-message" style="color: red; font-weight: bold;"></p>
+
+        <script>
+            // Check for error query param
+            const params = new URLSearchParams(window.location.search);
+            const error = params.get("error");
+            const errorMessageElement = document.getElementById("error-message");
+
+            if (error === "missing") {
+                errorMessageElement.textContent = "⚠️ Please fill in all required fields.";
+            } else if (error === "server") {
+                errorMessageElement.textContent = "⚠️ Something went wrong. Please try again.";
+            }
+        </script>
+
+        <!-- Right box: Welcome back message -->
+        <div class="form-box login">
+            <h2>Welcome Back!</h2>
+            <p>Already have an account? Sign in and continue your journey with RoomieRadar.</p>
+            <a href="/login.html" class="btn">Sign In</a>
+        </div>
+    </div>
+</body>
+</html>

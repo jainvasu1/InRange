@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InRange - Set Up Profile</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: #0F172A;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px);
+    background-size: 80px 80px;
+}
+
+.profile-container {
+    position: relative;
+    z-index: 10;
+    width: 90%;
+    max-width: 500px;
+    padding: 30px;
+    background: #fcf6d3;
+    border-radius: 10px;
+    box-shadow: 0 5px 30px rgba(54, 9, 80, 0.445);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.premium-status {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: gold;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: none;
+}
+
+.profile-container .logo {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 50px;
+}
+
+.profile-container h2 {
+    text-align: center;
+    color: #0F172A;
+    margin-bottom: 25px;
+    margin-top: 30px;
+}
+
+.profile-photo-area {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.avatar-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #6EE7B7;
+    border: 4px solid #6EE7B7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    cursor: pointer;
+    margin: 0 auto;
+}
+
+.avatar-circle i {
+    font-size: 48px;
+    color: #fcf6d3;
+}
+
+#profilePictureInput { display: none; }
+
+.form-group { margin-bottom: 25px; }
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px 0;
+    border: none;
+    border-bottom: 2px solid #0F172A;
+    background: transparent;
+    font-size: 1em;
+    color: #0F172A;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-bottom: 2px solid #0F172A;
+}
+
+.slider-label {
+    margin-top: 6px;
+    font-weight: 600;
+    color: #0F172A;
+}
+
+input[type=range] {
+    -webkit-appearance: none;
+    height: 5px;
+    background: #0F172A;
+    border-radius: 5px;
+}
+
+.btn-submit {
+    background: #0F172A;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 25px;
+}
+
+.btn-submit:hover { background: #c23d68; }
+
+.hidden-input { display: none; }
+
+</style>
+</head>
+
+<body>
+
+<div class="profile-container">
+
+<div class="premium-status" id="premiumStatus">
+⭐ Premium Member
+</div>
+
+<img src="/images/blogo.png" class="logo">
+
+<h2>Tell us about yourself!</h2>
+
+<div id="upload-error" style="display:none;background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;padding:10px 14px;border-radius:6px;margin-bottom:10px;font-size:0.9rem;"></div>
+
+<form action="/api/profile/update" method="POST" enctype="multipart/form-data">
+
+<div class="profile-photo-area" onclick="document.getElementById('profilePictureInput').click()">
+<div class="avatar-circle" id="avatarCircle">
+<i class='bx bxs-camera'></i>
+</div>
+<input type="file" id="profilePictureInput" name="profilePicture" accept="image/*">
+</div>
+
+<div class="form-group">
+<label>Full Name</label>
+<input name="fullName" id="fullName" required>
+</div>
+
+<div class="form-group">
+<label>Birth Date</label>
+<input type="date" name="birthDate" id="birthDate">
+</div>
+
+<div class="form-group">
+<label>Gender</label>
+<select name="gender" id="gender" required>
+<option value="">Select Gender</option>
+<option>Male</option>
+<option>Female</option>
+<option>Other</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Department</label>
+<input name="course" id="course" required>
+</div>
+
+<div class="form-group">
+<label>Year of Study</label>
+<select id="yearOfStudy" name="yearOfStudy" required>
+<option value="">Select Year</option>
+<option value="1st">1st Year</option>
+<option value="2nd">2nd Year</option>
+<option value="3rd">3rd Year</option>
+<option value="4th">4th Year</option>
+<option value="5th">5th Year</option>
+</select>
+</div>
+
+<div class="form-group">
+<label>Permanent Address</label>
+<input name="permanentAddress" id="permanentAddress">
+</div>
+
+<div class="form-group">
+<label>Contact Number</label>
+<input name="contactNumber" id="contactNumber">
+</div>
+
+<div class="form-group">
+<label>Instagram</label>
+<input name="instagramLink" id="instagramLink">
+</div>
+
+<div class="form-group">
+<label>LinkedIn</label>
+<input name="linkedinLink" id="linkedinLink">
+</div>
+
+<div class="form-group">
+<label>About Me</label>
+<textarea name="bio" id="bio" rows="4"></textarea>
+</div>
+
+<hr style="margin:30px 0; border:1px solid #0F172A;">
+<h3 style="color:#0F172A;">Your Preferences</h3>
+
+<!-- Budget -->
+<div class="form-group">
+<label>Budget</label>
+<input type="range" min="1" max="3" value="2" id="budgetSlider">
+<div class="slider-label" id="budgetLabel"></div>
+<input type="hidden" name="budget" id="budget">
+</div>
+
+<!-- Cleanliness -->
+<div class="form-group">
+<label>Cleanliness</label>
+<input type="range" min="1" max="3" value="2" id="cleanlinessSlider">
+<div class="slider-label" id="cleanlinessLabel"></div>
+<input type="hidden" name="cleanliness" id="cleanliness">
+</div>
+
+<!-- Sleep -->
+<div class="form-group">
+<label>Sleep Schedule</label>
+<input type="range" min="1" max="3" value="2" id="sleepSlider">
+<div class="slider-label" id="sleepLabel"></div>
+<input type="hidden" name="sleepSchedule" id="sleepSchedule">
+</div>
+
+<!-- Food -->
+<div class="form-group">
+<label>Food Preference</label>
+<input type="range" min="1" max="3" value="2" id="foodSlider">
+<div class="slider-label" id="foodLabel"></div>
+<input type="hidden" name="foodPreference" id="foodPreference">
+</div>
+
+<!-- Location -->
+<div class="form-group">
+<label>Location Preference</label>
+<input type="range" min="1" max="3" value="2" id="locationSlider">
+<div class="slider-label" id="locationLabel"></div>
+<input type="hidden" name="locationPreference" id="locationPreference">
+</div>
+
+<button type="submit" class="btn-submit">Save My Profile!</button>
+
+</form>
+</div>
+
+<script>
+const mappings = {
+budget: ["Low","Medium","High"],
+cleanliness: ["Very Clean","Moderate","Messy"],
+sleep: ["Early Sleeper","Flexible","Night Owl"],
+food: ["Vegetarian","Non-Vegetarian","Vegan"],
+location: ["Near Campus","City Center","Suburbs"]
+};
+
+function setupSlider(sliderId,labelId,hiddenId,mapArray){
+const slider=document.getElementById(sliderId);
+const label=document.getElementById(labelId);
+const hidden=document.getElementById(hiddenId);
+
+function update(){
+const value=mapArray[slider.value-1];
+label.innerText=value;
+hidden.value=value;
+}
+slider.addEventListener("input",update);
+update();
+}
+
+setupSlider("budgetSlider","budgetLabel","budget",mappings.budget);
+setupSlider("cleanlinessSlider","cleanlinessLabel","cleanliness",mappings.cleanliness);
+setupSlider("sleepSlider","sleepLabel","sleepSchedule",mappings.sleep);
+setupSlider("foodSlider","foodLabel","foodPreference",mappings.food);
+setupSlider("locationSlider","locationLabel","locationPreference",mappings.location);
+
+/* Premium Badge */
+fetch('/api/profile/me')
+.then(res=>res.json())
+.then(user=>{
+if(user.isPremium){
+document.getElementById("premiumStatus").style.display="block";
+}
+});
+
+/* Auto-fill */
+fetch('/api/profile/me')
+.then(res=>res.json())
+.then(profile=>{
+if(!profile) return;
+
+document.getElementById('fullName').value=profile.fullName||"";
+document.getElementById('birthDate').value=profile.birthDate?profile.birthDate.split('T')[0]:"";
+document.getElementById('gender').value=profile.gender||"";
+document.getElementById('course').value=profile.course||"";
+document.getElementById('yearOfStudy').value=profile.yearOfStudy||"";
+document.getElementById('permanentAddress').value=profile.permanentAddress||"";
+document.getElementById('contactNumber').value=profile.contactNumber||"";
+document.getElementById('bio').value=profile.bio||"";
+
+if(profile.profilePicture){
+document.getElementById('avatarCircle').innerHTML=
+`<img src="${profile.profilePicture}" style="width:100%;height:100%;object-fit:cover;">`;
+}
+});
+
+/* File preview when user picks an image */
+document.getElementById('profilePictureInput').addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Image too large. Max 5 MB.');
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('avatarCircle').innerHTML =
+      `<img src="${ev.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
+  };
+  reader.readAsDataURL(file);
+});
+
+/* Show server-side upload error from query param */
+(function () {
+  const err = new URLSearchParams(window.location.search).get('error');
+  if (err) {
+    const box = document.getElementById('upload-error');
+    box.textContent = err;
+    box.style.display = 'block';
+  }
+})();
+</script>
+
+</body>
+</html>

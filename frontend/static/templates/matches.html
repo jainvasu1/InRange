@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>InRange - Matches</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <style>
+    /* keep your original styling (kept concise) */
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0F172A;
+      min-height: 100vh;
+      position: relative;
+    }
+    body::before {
+      content: "";
+      position: absolute; top: 0; left: 0; width:100%; height:100%;
+      background-image: linear-gradient(to right, rgba(255,255,255,0.2) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255,255,255,0.2) 1px, transparent 1px);
+      background-size: 80px 80px;
+      z-index: -1; pointer-events: none;
+    }
+    .match-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      color: white;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+      margin: 10% auto;
+    }
+
+    .high { background: #2ecc71; }       /* 85+ */
+    .medium { background: #f39c12; }     /* 60-84 */
+    .low { background: #e74c3c; }        /* below 60 */
+    .matches-container { display:grid; gap:24px; padding:24px; max-width:1200px; margin:0 auto; z-index:1; }
+    @media (min-width:640px){ .matches-container{ grid-template-columns:repeat(2,1fr); } }
+    @media (min-width:1024px){ .matches-container{ grid-template-columns:repeat(3,1fr); } }
+    .match-card{ background:#f7ede1; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.08); overflow:hidden; transition:transform .3s, box-shadow .3s; }
+    .match-card:hover{ transform:translateY(-5px); box-shadow:0 10px 20px rgba(0,0,0,0.15); }
+    .card-image{ width:100%; height:200px; object-fit:cover; }
+    .card-info{ padding:16px; }
+    .card-info h3{ font-size:1.25rem; font-weight:700; color:#e75480; margin-bottom:8px; }
+    .detail-item{ display:flex; align-items:center; font-size:0.95rem; color:#4b5563; margin-bottom:6px; }
+    .detail-item i{ margin-right:8px; color:#8b5cf6; }
+    .hobbies-list{ margin-top:12px; padding-top:12px; border-top:1px solid #e5e7eb; }
+    .hobbies-list span{ display:inline-block; background:#fce7f3; color:#be185d; padding:4px 10px; border-radius:9999px; font-size:0.8rem; font-weight:500; margin-right:6px; margin-bottom:6px; }
+    .no-matches{ text-align:center; padding:50px; grid-column:1/-1; margin-top:50px; background:#f7ede1; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.08); z-index:1; }
+    .header{ background:#f7ede1; padding:1rem 1.5rem; box-shadow:0 2px 4px rgba(0,0,0,0.05); margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; z-index:1; }
+    .header-logo{ height:40px; width:auto; }
+    .spinner{ border:4px solid #f3f3f3; border-top:4px solid #e75480; border-radius:50%; width:40px; height:40px; animation:spin 2s linear infinite; margin:50px auto; z-index:1; }
+    @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+
+    /* Chat modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;   /* 🔥 THIS LINE FIXES YOUR ISSUE */
+      transition: 0.3s;
+    }
+
+    .modal-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .chat-container-modal{ width:90%; max-width:600px; height:80vh; background:#f7ede1; border-radius:15px; box-shadow:0 8px 30px rgba(0,0,0,0.3); display:flex; flex-direction:column; overflow:hidden; transform:scale(.95); transition:transform .25s; }
+    .modal-overlay.visible .chat-container-modal{ transform:scale(1); }
+    .chat-header{ background:#e75480; color:white; padding:15px; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
+    .chat-messages{ flex-grow:1; padding:15px; overflow-y:auto; display:flex; flex-direction:column; gap:10px; background:#f9f9f9; }
+    .message{ max-width:70%; padding:10px 15px; border-radius:15px; line-height:1.4; }
+    .message.sent{ background:#8b5cf6; color:white; align-self:flex-end; border-bottom-right-radius:3px; }
+    .message.received{ background:#eee; color:#333; align-self:flex-start; border-bottom-left-radius:3px; }
+    .chat-input{ display:flex; padding:15px; border-top:1px solid #eee; background:white; }
+    .chat-input input{ flex-grow:1; padding:10px; border:1px solid #ccc; border-radius:20px; margin-right:10px; }
+    .chat-input button{ background:#e75480; color:white; border:none; border-radius:50%; width:40px; height:40px; cursor:pointer; font-size:1.2em; display:flex; align-items:center; justify-content:center; }
+
+    /* ✨ Match Breakdown Modal Upgrade */
+    .breakdown-container {
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      background: #f7ede1;
+      border-radius: 15px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.95);
+      transition: transform .25s ease;
+    }
+
+    .modal-overlay.visible .breakdown-container {
+      transform: scale(1);
+    }
+
+    /* Content scroll */
+    .breakdown-content {
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    /* AI explanation box */
+    .explanation-box {
+      margin-top: 15px;
+      background: #fce7f3;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #333;
+      line-height: 1.4;
+    }
+    .stat-box {
+      flex:1;
+      background:#fff;
+      padding:10px;
+      border-radius:10px;
+      text-align:center;
+      font-size:14px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    /* Score section */
+    .score-box {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #444;
+    }
+
+    .score-box p {
+      margin-bottom: 6px;
+    }
+
+    /* 💖 MATCH BANNER */
+    .match-banner {
+      max-width: 700px;
+      margin: 20px auto;
+      background: #fde2e4;
+      border-radius: 20px;
+      padding: 18px;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    /* Hearts row */
+    .banner-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .heart {
+      font-size: 22px;
+      animation: float 2s infinite ease-in-out;
+    }
+
+    .heart-left {
+      margin-right: 10px;
+    }
+
+    .heart-right {
+      margin-left: 10px;
+    }
+
+    /* Floating animation */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+      100% { transform: translateY(0px); }
+    }
+
+    /* Path container */
+    .path {
+      position: relative;
+      width: 200px;
+      height: 50px;
+    }
+
+    /* Moving heart */
+    .moving-heart {
+      position: absolute;
+      top: 0;
+      left: 0;
+      font-size: 18px;
+    }
+
+    /* Text */
+    .match-text {
+      background: #fbcfe8;
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 600;
+      color: #be185d;
+      font-size: 14px;
+    }
+
+    .match-subtext {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #444;
+      line-height: 1.6;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <img src="/images/blogo.png" alt="InRange Logo" class="header-logo">
+    <a href="/preferences.html" class="px-4 py-2 text-sm font-semibold text-white bg-pink-500 rounded-lg shadow hover:bg-purple-600 transition duration-150">
+      <i class='bx bx-filter-alt'></i> Preferences
+    </a>
+  </div>
+
+  <div id="loading-spinner" class="spinner"></div>
+  <div class="matches-container" id="card-container" style="display:none;"></div>
+
+  <div class="no-matches" id="no-matches" style="display:none;">
+    <i class='bx bx-search' style="font-size:48px;color:#e75480;"></i>
+    <p class="text-lg font-semibold">No more potential roomies for now. Check back later!</p>
+    <p class="text-sm text-gray-500 mt-2">Try adjusting your matching preferences.</p>
+  </div>
+
+  <!-- CHAT MODAL -->
+  <div id="chat-modal-overlay" class="modal-overlay" aria-hidden="true">
+    <div class="chat-container-modal" role="dialog" aria-modal="true" aria-labelledby="chat-recipient-name">
+      <div class="chat-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <i class='bx bx-arrow-back back-btn' style="cursor:pointer;font-size:18px;" onclick="closeChatModal()"></i>
+          <span id="chat-recipient-name">Chatting with...</span>
+        </div>
+        <div></div>
+      </div>
+
+      <div class="chat-messages" id="chat-messages" aria-live="polite"></div>
+
+      <div class="chat-input">
+        <input id="message-input" type="text" placeholder="Type a message..." autocomplete="off" />
+        <button id="send-button" aria-label="Send message"><i class='bx bx-send'></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="breakdownModal" class="modal-overlay">
+      <div class="chat-container-modal" style="max-width:700px;height:auto;max-height:90vh;overflow:hidden;">
+
+        <!-- HEADER -->
+        <div class="chat-header" style="justify-content:space-between; position:relative;">
+          <span>Why This Match?</span>
+
+          <img src="/images/heart-match.png"
+              style="position:absolute; right:40px; top:5px; width:60px; opacity:0.9;">
+
+          <i class='bx bx-x' style="cursor:pointer;font-size:20px;" onclick="closeBreakdown()"></i>
+        </div>
+
+        <!-- BODY -->
+        <div style="padding:15px; overflow-y:auto;">
+        <!-- 💖 MATCH BANNER -->
+          <div class="match-banner">
+            <div class="banner-content">
+
+              <!-- Left Heart -->
+              <div class="heart heart-left">💗</div>
+
+              <!-- Dotted Path -->
+              <div class="path">
+                <svg viewBox="0 0 200 50">
+                  <path id="motionPath"
+                        d="M10 25 Q 100 0 190 25"
+                        fill="transparent"
+                        stroke="#f9a8d4"
+                        stroke-width="2"
+                        stroke-dasharray="5,5"/>
+                </svg>
+
+                <!-- Moving Heart -->
+                <div class="moving-heart">💜</div>
+              </div>
+
+              <!-- Right Heart -->
+              <div class="heart heart-right">💖</div>
+
+            </div>
+
+            <!-- Text -->
+            <div class="match-text">
+              ❤️ <span id="bannerScore">87%</span> Lifestyle Match
+            </div>
+
+            <div class="match-subtext" id="bannerSubtext">
+              You both have similar habits and preferences in most areas.<br>
+              That’s what makes you a great match ✨
+            </div>
+          </div>
+          <!-- PROFILE + MATCH -->
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <img id="matchAvatar" src="" style="width:50px;height:50px;border-radius:50%;object-fit:cover;">
+            <div>
+              <h3 id="matchName" style="font-weight:600;"></h3>
+              <span id="matchPercent" style="font-size:12px;background:#fce7f3;padding:3px 8px;border-radius:10px;color:#e75480;"></span>
+            </div>
+          </div>
+
+          <!-- SUMMARY -->
+          <div style="
+            background: #fde2e4;
+            border: 1px solid #f8cdd3;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display:flex;
+            gap:8px;
+            align-items:flex-start;">
+            <span style="font-size:18px;">💡</span>
+            <p id="summaryText" style="font-size:13px;margin:0;"></p>
+          </div>
+
+          <!-- GRID SECTION -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+            <!-- CHART -->
+            <div style="background:#fff;border-radius:10px;padding:10px;">
+              <p style="font-weight:600;font-size:13px;margin-bottom:5px;">Compatibility Overview</p>
+              <canvas id="radarChart" height="200"></canvas>
+            </div>
+
+            <!-- MATCH POINTS -->
+            <div style="background:#f0fdf4;border-radius:10px;padding:10px;">
+              <p style="font-weight:600;font-size:13px;">What You Both Match On</p>
+              <ul id="matchPoints" style="font-size:12px;margin-top:5px;"></ul>
+            </div>
+
+          </div>
+
+          <!-- DIFFERENCES -->
+          <div style="background:#fff7ed;padding:10px;border-radius:10px;margin-top:12px;">
+            <p style="font-weight:600;font-size:13px;">Possible Differences</p>
+            <p id="differencesText" style="font-size:12px;"></p>
+          </div>
+
+          <!-- AI INSIGHT -->
+          <div style="background:#f5f3ff;padding:10px;border-radius:10px;margin-top:12px;">
+            <p style="font-size:12px;" id="aiExplanation"></p>
+          </div>
+
+          <!-- BOTTOM STATS -->
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <div class="stat-box">
+              ❤️ <span id="lifeScore"></span><br><small>Lifestyle</small>
+            </div>
+            <div class="stat-box">
+              ⚙️ <span id="prefScore"></span><br><small>Preference</small>
+            </div>
+            <div class="stat-box">
+              ⭐ <span id="premiumStatus"></span><br><small>Visibility</small>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  <!-- socket.io client (assumes server serves socket.io on same origin) -->
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+    // -------------------------
+    // Data + DOM refs
+    // -------------------------
+    const container = document.getElementById('card-container');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const noMatchesDiv = document.getElementById('no-matches');
+    
+    // Chat refs
+    const chatModalOverlay = document.getElementById('chat-modal-overlay');
+    const chatRecipientName = document.getElementById('chat-recipient-name');
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+
+    let matches = [];
+    let currentUserId = null;           // logged-in user's profile.user id
+    let socket = null;
+    let currentChatMatchId = null;      // the userId of the match we're chatting with
+    let chatHistory = {};               // in-memory cache: { otherId: [ {text,type,ts} ] }
+    let radarChartInstance = null;
+    // -------------------------
+    // Utilities
+    // -------------------------
+    function closeBreakdown() {
+      document.getElementById("breakdownModal").classList.remove("visible");
+    }
+    function createMatchCard(match) {
+    const card = document.createElement('div');
+    card.className = 'match-card';
+    card.dataset.userId = match.id;
+
+    const hobbiesHtml = Array.isArray(match.hobbies) && match.hobbies.length
+      ? match.hobbies.map(h => `<span>${escapeHtml(h)}</span>`).join('')
+      : '<p class="text-gray-400">None listed</p>';
+
+    const matchScore = typeof match.matchScore === 'number' ? match.matchScore : 0;
+
+    let badgeClass = "low";
+    if (matchScore >= 85) badgeClass = "high";
+    else if (matchScore >= 60) badgeClass = "medium";
+
+    let imgSrc = match.profilePhoto || 'https://placehold.co/400x400/cccccc/333333?text=No+Image';
+    if (typeof imgSrc === 'string') imgSrc = imgSrc.trim();
+
+    card.innerHTML = `
+      <div class="match-badge ${badgeClass}">
+        ${matchScore}% Match
+      </div>
+
+      <img src="${escapeAttr(imgSrc)}" 
+          alt="${escapeAttr(match.username || 'User')}'s Profile Photo" 
+          class="card-image"
+          onerror="this.onerror=null;this.src='https://placehold.co/400x400/cccccc/333333?text=No+Image'">
+
+      <div class="card-info">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <h3>${escapeHtml(match.username || 'Unknown User')}</h3>
+        </div>
+
+        <div class="detail-item">
+          <i class='bx bxs-school'></i>
+          <span>${escapeHtml(match.department || 'N/A')}</span>
+        </div>
+
+        <div class="detail-item">
+          <i class='bx bx-calendar'></i>
+          <span>${escapeHtml(match.year || 'N/A')}</span>
+        </div>
+
+        <div class="hobbies-list">
+          <p class="font-semibold text-gray-700 mb-2">Hobbies:</p>
+          ${hobbiesHtml}
+        </div>
+
+        <button class="connect-btn w-full mt-3 py-2 font-semibold text-white bg-pink-500 rounded-lg shadow-md hover:bg-pink-600 transition duration-150 flex items-center justify-center"
+                data-id="${escapeAttr(match.id)}"
+                data-name="${escapeAttr(match.username || '')}">
+          <i class='bx bxs-chat mr-2'></i> Connect
+        </button>
+      </div>
+    `;
+      const whyBtn = document.createElement("button");
+      whyBtn.innerText = "Why This Match?";
+      whyBtn.className = "w-full mt-3 py-2 text-sm font-semibold text-white bg-purple-500 rounded-lg hover:bg-purple-600 transition";
+      whyBtn.addEventListener("click", () => showBreakdown(match));
+      // 👇 THIS IS THE LINE YOU ASKED ABOUT
+      card.querySelector(".card-info").appendChild(whyBtn);
+    return card;
+  }
+
+    function renderMatches() {
+      loadingSpinner.style.display = 'none';
+      container.innerHTML = '';
+
+      const displayMatches = matches;
+
+      if (!displayMatches.length) {
+        container.style.display = 'none';
+        noMatchesDiv.style.display = 'block';
+        return;
+      }
+
+      container.style.display = 'grid';
+      noMatchesDiv.style.display = 'none';
+
+      displayMatches.sort((a,b) => (b.matchScore || 0) - (a.matchScore || 0));
+      displayMatches.forEach(m => container.appendChild(createMatchCard(m)));
+
+      // attach connect handlers
+      document.querySelectorAll('.connect-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = e.currentTarget.dataset.id;
+          const name = e.currentTarget.dataset.name;
+          openChatModal(id, name);
+        });
+      });
+    }
+
+    function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function escapeAttr(s){ return escapeHtml(s).replace(/"/g,'&quot;'); }
+
+    // -------------------------
+    // Backend fetch helpers
+    // -------------------------
+    async function fetchCurrentUser() {
+      try {
+        const res = await fetch('/api/profile/me', { credentials: 'include' });
+        if (!res.ok) throw new Error('Not authenticated or failed to fetch profile');
+        const data = await res.json();
+        // Expect backend profile record to include `user` (ObjectId string) or `userId`
+        currentUserId = data.user || data.userId || (data._id ? data._id : null);
+        return data;
+      } catch (err) {
+        console.warn('Failed to fetch current profile:', err);
+        return null;
+      }
+    }
+
+    async function fetchMatchesFromBackend() {
+      try {
+        const res = await fetch('/api/profile/matches', { credentials: 'include' });
+        if (!res.ok) throw new Error('Failed to load matches from backend');
+        const payload = await res.json();
+        const profiles = payload.matches || [];
+
+        matches = profiles.map(p => ({
+          id: p.id,
+          username: p.fullName || 'Unknown',
+          department: p.department || 'N/A',
+          year: p.yearOfStudy || 'N/A',
+          hobbies: Array.isArray(p.hobbies) ? p.hobbies : [],
+          profilePhoto: p.profilePicture || '',
+          matchScore: p.matchScore ?? 0,
+          breakdown: p.breakdown || {},
+          aiExplanation: p.aiExplanation || ""
+        }));
+
+        renderMatches();
+      } catch (err) {
+        console.error('Error loading matches:', err);
+        loadingSpinner.style.display = 'none';
+        noMatchesDiv.style.display = 'block';
+      }
+    }
+
+    function showBreakdown(match) {
+      const data = match.breakdown || {};
+      const radarData = data.radar || {};
+
+      // HEADER
+      document.getElementById("matchName").innerText = match.username;
+      document.getElementById("matchAvatar").src = match.profilePhoto;
+      document.getElementById("matchPercent").innerText = match.matchScore + "% Match";
+      // ✅ SUMMARY FUNCTION
+      function generateSummary(score) {
+        if (score >= 85)
+          return "This is a highly compatible match with very similar lifestyles and habits. Living together should feel natural and comfortable. ✨";
+        else if (score >= 65)
+          return "You both share a good level of compatibility. With a little adjustment, this can be a great living experience.";
+        else
+          return "There are some differences in your lifestyles, but with understanding, this match can still work out.";
+      }
+
+      document.getElementById("summaryText").innerText =
+        generateSummary(match.matchScore);
+
+      // ✅ MATCH POINTS
+      const matchList = document.getElementById("matchPoints");
+      matchList.innerHTML = "";
+
+      if (radarData.cleanliness >= 70)
+        matchList.innerHTML += "<li>🧹 Cleanliness habits align well, making shared spaces easier to maintain</li>";
+
+      if (radarData.sleepSchedule >= 70)
+        matchList.innerHTML += "<li>🌙 Sleep schedules are compatible, reducing chances of disturbance</li>";
+
+      if (radarData.locationPreference >= 70)
+        matchList.innerHTML += "<li>📍 Both prefer similar locations, making housing decisions easier</li>";
+
+      if (radarData.budget >= 70)
+        matchList.innerHTML += "<li>💰 Budget expectations are aligned, avoiding financial conflicts</li>";
+
+      if (radarData.foodPreference >= 70)
+        matchList.innerHTML += "<li>🍽️ Food choices are compatible, making daily living smoother</li>";
+
+      if (matchList.innerHTML === "") {
+        matchList.innerHTML = "<li>🤝 Some moderate alignments exist, but adjustments may be needed</li>";
+      }
+
+      // ✅ DIFFERENCES (FIXED)
+      let diffText = "";
+
+      if (radarData.foodPreference < 60)
+        diffText += "Food preferences may differ. ";
+
+      if (radarData.sleepSchedule < 60)
+        diffText += "Sleep schedules might not fully align. ";
+
+      if (radarData.cleanliness < 60)
+        diffText += "Cleanliness expectations could vary. ";
+
+      document.getElementById("differencesText").innerText =
+        diffText || "Very minimal differences between both of you.";
+
+      // SCORES
+      document.getElementById("lifeScore").innerText = data.lifestyleScore + "%";
+      document.getElementById("prefScore").innerText = match.matchScore + "%";
+      document.getElementById("premiumStatus").innerText =
+        data.premiumBoost ? "High" : "Normal";
+
+      // AI TEXT
+      function generateAIText(score) {
+        if (score >= 85)
+          return `You both have a very strong compatibility (${score}%). Your lifestyles align naturally, making daily living smooth and comfortable.`;
+        else if (score >= 65)
+          return `You share a good compatibility level (${score}%). With small adjustments, this can be a great roommate match.`;
+        else
+          return `Your compatibility is ${score}%. There are differences, but with communication, things can still work out.`;
+      }
+
+      document.getElementById("aiExplanation").innerText =
+        generateAIText(match.matchScore);
+      // CHART
+      const ctx = document.getElementById("radarChart").getContext("2d");
+
+      if (radarChartInstance) radarChartInstance.destroy();
+
+      radarChartInstance = new Chart(ctx, {
+        type: "radar",
+        data: {
+          labels: ["Cleanliness", "Sleep", "Food", "Location", "Budget"],
+          datasets: [{
+            label: "Compatibility",
+            data: [
+              radarData.cleanliness || 0,
+              radarData.sleepSchedule || 0,
+              radarData.foodPreference || 0,
+              radarData.locationPreference || 0,
+              radarData.budget || 0
+            ],
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            r: {
+              min: 0,
+              max: 100,
+              ticks: { stepSize: 20 }
+            }
+          }
+        }
+      });
+
+      document.getElementById("breakdownModal").classList.add("visible");
+      document.getElementById("bannerScore").innerText = match.matchScore;
+      document.getElementById("bannerSubtext").innerHTML =
+        generateSmartBanner(match); 
+      animateHeart();
+    }
+
+    function extractHobbiesFromBio(bio) {
+      const keywords = ['reading','painting','drawing','dancing','writing','gossiping','editing','sleeping','resting','hiking','coding','coffee'];
+      const found = [];
+      const s = (bio||'').toLowerCase();
+      keywords.forEach(k => { if (s.includes(k)) found.push(capitalize(k)); });
+      return found;
+    }
+    function capitalize(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+    // -------------------------
+    // Chat history persistence & Socket.IO
+    // -------------------------
+    function setupSocketIo() {
+      try {
+        socket = io(); // same origin
+      } catch (e) {
+        console.warn('Socket.IO client not available:', e);
+        socket = null;
+      }
+
+      if (!socket) return;
+
+      socket.on('connect', () => {
+        console.log('Socket connected', socket.id);
+        if (currentUserId) socket.emit('registerUser', currentUserId);
+      });
+
+      // incoming private message saved by server and forwarded to recipient
+      socket.on('newMessage', ({ senderId, message, timestamp }) => {
+        if (!senderId) return;
+        if (!chatHistory[senderId]) chatHistory[senderId] = [];
+        chatHistory[senderId].push({ text: message, type: 'received', ts: timestamp || Date.now() });
+
+        // if modal currently open for that sender, append live
+        if (currentChatMatchId === senderId) appendMessageToModal(message, 'received');
+      });
+
+      socket.on('messageSent', ({ message }) => {
+        // ack - nothing necessary; local UI already appended
+        console.debug('messageSent ack', message);
+      });
+
+      socket.on('error', e => console.error('Socket error', e));
+      socket.on('disconnect', () => console.log('Socket disconnected'));
+    }
+
+    // compute chatId same way server uses: sorted join
+    function computeChatId(a,b){ return [String(a), String(b)].sort().join('_'); }
+
+    // load chat history from backend for a given otherId
+    async function loadChatHistory(otherId) {
+      try {
+        const res = await fetch(`/api/chat/${encodeURIComponent(otherId)}`, { credentials: 'include' });
+        if (!res.ok) throw new Error('Failed to load chat history');
+        const msgs = await res.json();
+        // normalize to local format and cache
+        chatHistory[otherId] = (msgs || []).map(m => ({
+          text: m.text,
+          type: (String(m.senderId) === String(currentUserId)) ? 'sent' : 'received',
+          ts: new Date(m.timestamp).getTime()
+        }));
+      } catch (err) {
+        console.warn('No chat history or failed to fetch:', err);
+        chatHistory[otherId] = chatHistory[otherId] || [];
+      }
+    }
+
+    // -------------------------
+    // Chat modal actions
+    // -------------------------
+    async function openChatModal(matchId, username) {
+      currentChatMatchId = matchId;
+      chatRecipientName.textContent = `Chatting with ${username || 'Match'}`;
+      chatModalOverlay.classList.add('visible');
+
+      // Ensure history present (fetch from backend)
+      if (!chatHistory[matchId] || chatHistory[matchId].length === 0) {
+        await loadChatHistory(matchId);
+      }
+
+      chatMessages.innerHTML = '';
+      (chatHistory[matchId] || []).forEach(m => appendMessageToModal(m.text, m.type));
+      messageInput.focus();
+    }
+
+    function closeChatModal() {
+      chatModalOverlay.classList.remove('visible');
+      currentChatMatchId = null;
+      chatMessages.innerHTML = '';
+      messageInput.value = '';
+    }
+
+    function appendMessageToModal(text, type) {
+      const el = document.createElement('div');
+      el.className = `message ${type === 'sent' ? 'sent' : 'received'}`;
+      el.textContent = text;
+      chatMessages.appendChild(el);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text || !currentChatMatchId) return;
+
+      // optimistic UI
+      if (!chatHistory[currentChatMatchId]) chatHistory[currentChatMatchId] = [];
+      chatHistory[currentChatMatchId].push({ text, type: 'sent', ts: Date.now() });
+      appendMessageToModal(text, 'sent');
+      messageInput.value = '';
+
+      // send via socket
+      if (socket && socket.connected) {
+        socket.emit('privateMessage', { recipientId: currentChatMatchId, message: text });
+      } else {
+        // as fallback, POST to backend endpoint to save message (if you implement it)
+        try {
+          await fetch('/api/chat/send', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ recipientId: currentChatMatchId, message: text })
+          });
+        } catch (e) {
+          console.warn('Fallback message save failed', e);
+        }
+      }
+    }
+
+    // keyboard & button handlers
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    chatModalOverlay.addEventListener('click', (e) => {
+      if (e.target === chatModalOverlay) closeChatModal();
+    });
+
+    // -------------------------
+    // Boot sequence
+    // -------------------------
+    (async function boot() {
+      loadingSpinner.style.display = 'block';
+      container.style.display = 'none';
+      noMatchesDiv.style.display = 'none';
+
+      // fetch current user profile so we can register socket with server
+      await fetchCurrentUser();
+
+      // setup socket.io (server will accept registerUser)
+      setupSocketIo();
+
+      // fetch matches from backend, backend includes matchScore
+      await fetchMatchesFromBackend();
+
+      loadingSpinner.style.display = 'none';
+    })();
+    function animateHeart() {
+      const modal = document.getElementById("breakdownModal");
+      const heart = modal.querySelector(".moving-heart");
+      const path = modal.querySelector("#motionPath");
+
+      if (!heart || !path) return;
+
+      const pathLength = path.getTotalLength();
+      let progress = 0;
+
+      function move() {
+        progress += 1;
+        if (progress > pathLength) progress = 0;
+
+        const point = path.getPointAtLength(progress);
+        heart.style.transform = `translate(${point.x}px, ${point.y}px)`;
+
+        requestAnimationFrame(move);
+      }
+
+      move();
+    }
+    function generateBannerText(score) {
+      if (score >= 85) {
+        return `You both have very similar lifestyles and habits.<br>
+                This makes your match highly compatible 💖`;
+      } 
+      else if (score >= 65) {
+        return `You share a good number of common preferences.<br>
+                With a little adjustment, this can work really well ✨`;
+      } 
+      else {
+        return `You have some differences in lifestyle.<br>
+                But with understanding, this can still be a workable match 🤝`;
+      }
+    }
+    function generateSmartBanner(match) {
+      const r = match.breakdown?.radar || {};
+      let lines = [];
+
+      if (r.cleanliness >= 70) lines.push("🧹 Cleanliness aligned");
+      if (r.sleepSchedule >= 70) lines.push("🌙 Sleep schedule similar");
+      if (r.locationPreference >= 70) lines.push("📍 Location match");
+      if (r.budget >= 70) lines.push("💰 Budget match");
+      if (r.foodPreference >= 70) lines.push("🍽️ Food match");
+
+      if (lines.length === 0) {
+        return "Some differences exist<br>But this can still work 🤝";
+      }
+
+      // 🔥 LIMIT TO 2–3 ONLY
+      return lines.slice(0, 3).join("<br>");
+    }
+  </script>
+</body>
+</html>
