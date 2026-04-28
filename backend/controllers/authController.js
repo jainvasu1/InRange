@@ -15,12 +15,15 @@ const generateToken = (userId) => {
 // ------------------------------------------
 exports.registerUser = async (req, res) => {
   try {
-    const { username, email, password, confirm_password } = req.body;
+    let { username, email, password, confirm_password } = req.body;
 
     // Validate required fields
     if (!username || !email || !password || !confirm_password) {
       return res.redirect('/signup.html?error=missing');
     }
+
+    // Normalise email so case differences don't create duplicate / mismatched accounts
+    email = email.trim().toLowerCase();
 
     // Password mismatch
     if (password !== confirm_password) {
@@ -55,12 +58,14 @@ exports.registerUser = async (req, res) => {
 // ------------------------------------------
 exports.loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
 
     // Validate fields
     if (!email || !password) {
       return res.redirect('/login.html?error=missing');
     }
+
+    email = email.trim().toLowerCase();
 
     const user = await User.findOne({ email });
 
