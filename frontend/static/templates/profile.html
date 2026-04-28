@@ -174,13 +174,22 @@ input[type=range] {
 <!-- Crop Modal -->
 <div id="cropModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;align-items:center;justify-content:center;">
   <div style="background:#fff;padding:20px;border-radius:12px;max-width:95vw;width:480px;">
-    <h3 style="margin-bottom:12px;color:#0F172A;">Adjust your photo</h3>
-    <div style="max-height:60vh;overflow:hidden;">
-      <img id="cropTarget" style="max-width:100%;display:block;">
+    <h3 style="margin-bottom:8px;color:#0F172A;">Adjust your photo</h3>
+    <p style="font-size:12px;color:#666;margin-bottom:10px;">Drag to reposition, scroll/pinch to zoom.</p>
+    <div style="height:360px;background:#000;">
+      <img id="cropTarget" style="display:block;max-width:100%;">
     </div>
-    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
-      <button type="button" id="cropCancel" style="padding:8px 16px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;">Cancel</button>
-      <button type="button" id="cropSave" style="padding:8px 16px;border:none;background:#0F172A;color:#fff;border-radius:6px;cursor:pointer;">Save Photo</button>
+    <div style="display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:14px;">
+      <div style="display:flex;gap:6px;">
+        <button type="button" id="zoomIn" title="Zoom in" style="padding:6px 10px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;">＋</button>
+        <button type="button" id="zoomOut" title="Zoom out" style="padding:6px 10px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;">－</button>
+        <button type="button" id="rotateBtn" title="Rotate" style="padding:6px 10px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;">⟳</button>
+        <button type="button" id="resetBtn" title="Reset" style="padding:6px 10px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;">Reset</button>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button type="button" id="cropCancel" style="padding:8px 16px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;">Cancel</button>
+        <button type="button" id="cropSave" style="padding:8px 16px;border:none;background:#0F172A;color:#fff;border-radius:6px;cursor:pointer;">Save Photo</button>
+      </div>
     </div>
   </div>
 </div>
@@ -393,14 +402,18 @@ document.getElementById('avatarCircle').innerHTML=
       if (cropper) cropper.destroy();
       cropper = new Cropper(cropTarget, {
         aspectRatio: 1,
-        viewMode: 1,
+        viewMode: 0,
         dragMode: 'move',
-        autoCropArea: 1,
-        background: false,
+        autoCropArea: 0.9,
+        background: true,
         movable: true,
         zoomable: true,
         scalable: false,
         rotatable: true,
+        cropBoxResizable: true,
+        cropBoxMovable: true,
+        minContainerWidth: 320,
+        minContainerHeight: 320,
       });
     };
     reader.readAsDataURL(file);
@@ -410,6 +423,11 @@ document.getElementById('avatarCircle').innerHTML=
     fileInput.value = '';
     closeModal();
   });
+
+  document.getElementById('zoomIn').addEventListener('click', () => cropper && cropper.zoom(0.1));
+  document.getElementById('zoomOut').addEventListener('click', () => cropper && cropper.zoom(-0.1));
+  document.getElementById('rotateBtn').addEventListener('click', () => cropper && cropper.rotate(90));
+  document.getElementById('resetBtn').addEventListener('click', () => cropper && cropper.reset());
 
   saveBtn.addEventListener('click', () => {
     if (!cropper) return closeModal();
